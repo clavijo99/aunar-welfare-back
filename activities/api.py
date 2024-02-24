@@ -164,11 +164,10 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
         try:
             user = User.objects.get(pk=request.data['user_id'])
             if user.type == utils.TEACHER:
-                current_day = datetime.now().strftime('%A').lower()
                 teacher_activities = user.activitity.all()
                 teacher_activities_today = teacher_activities.filter(
-                    activities_schedule__day=current_day
-                ).order_by('activities_schedule__hour')
+                    day=u.get_day()
+                ).order_by('day')
                 serializer = ActivitySerializer(teacher_activities_today, many=True)
                 return Response({ 'activities': serializer .data})
             else :
