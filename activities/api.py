@@ -172,7 +172,7 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             user = User.objects.get(pk=request.data['user_id'])
             if user.type == utils.TEACHER:
                 teacher_activities = Activity.objects.filter(
-                    teachers=user,
+                    teacher=user,
                     start_date=current_date
                 )
                 serializer = ActivitySerializer(teacher_activities, many=True)
