@@ -145,16 +145,14 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
     def get_my_activities(self, request, pk=None):
         try:
             user = User.objects.get(pk=request.data['user_id'])
-            current_day = datetime.now().strftime('%A').lower()
-            user_activities = user.activities_participated.all()
-            user_activities_today = user_activities.filter(
-                activities_schedule__day=current_day
-            ).order_by('activities_schedule__hour_start')
+            current_date = datetime.now().date()
+            user_activities_today = user.activities_participated.filter(
+                start_date=current_date
+            ).order_by('hour')
             serializer = ActivitySerializer(user_activities_today, many=True)
-            return Response({ 'activities': serializer .data})
+            return Response( serializer.data)
         except Activity.DoesNotExist:
             return Response({'message': 'Activity not found'}, status=status.HTTP_404_NOT_FOUND)
-
 
     @extend_schema(
         request=ActivityRegisterUserSerializer
