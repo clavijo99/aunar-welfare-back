@@ -139,20 +139,27 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             return Response({'message': 'Activity not found'}, status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
-        request=ActivityRegisterUserSerializer
-    )
+        request=ActivityRegisterUserSerializer,
+        responses=ActivitySerializer(many=True))
     @action(detail=False, methods=['post'])
     def get_my_activities(self, request, pk=None):
         try:
             user = User.objects.get(pk=request.data['user_id'])
             current_date = datetime.now().date()
-            user_activities_today = user.activities_participated.filter(
+
+            # Filtra las actividades directamente por el usuario y la fecha actual
+            user_activities_today = Activity.objects.filter(
+                participants=user,
                 start_date=current_date
             ).order_by('hour')
+
             serializer = ActivitySerializer(user_activities_today, many=True)
-            return Response( serializer.data)
+            return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         except Activity.DoesNotExist:
-            return Response({'message': 'Activity not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'message': 'No activities found for the user on the given date'},
+                            status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
         request=ActivityRegisterUserSerializer
