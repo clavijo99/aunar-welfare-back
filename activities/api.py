@@ -162,19 +162,21 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
                             status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
-        request=ActivityRegisterUserSerializer
+        request=ActivityRegisterUserSerializer,
+        responses=ActivitySerializer(many=True)
     )
     @action(detail=False, methods=['post'])
     def get_my_activities_teacher(self, request, pk=None):
         try:
+            current_date = datetime.now().date()
             user = User.objects.get(pk=request.data['user_id'])
             if user.type == utils.TEACHER:
-                teacher_activities = user.activitity.all()
-                teacher_activities_today = teacher_activities.filter(
-                    day=u.get_day()
-                ).order_by('day')
-                serializer = ActivitySerializer(teacher_activities_today, many=True)
-                return Response({ 'activities': serializer .data})
+                teacher_activities = Activity.objects.filter(
+                    teachers=user,
+                    start_date=current_date
+                )
+                serializer = ActivitySerializer(teacher_activities, many=True)
+                return Response( serializer.data)
             else :
                 return Response({'message': 'No es un profesor'})
         except Activity.DoesNotExist:
