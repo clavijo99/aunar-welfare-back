@@ -27,13 +27,6 @@ class Activity(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     points = models.IntegerField()
-    dias_semana = models.CharField(
-        max_length=20,
-        choices= utils.DIAS_SEMANA_CHOICES,
-        blank=True,
-        null=True,
-        help_text="Selecciona los días de la semana",
-    )
     students = models.ManyToManyField(User, related_name='activities')
     teacher = models.ForeignKey(User, on_delete=models.CASCADE , related_name='activitity')
     participants = models.ManyToManyField(User, related_name='activities_participated', through='Participation')
