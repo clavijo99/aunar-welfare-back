@@ -22,7 +22,7 @@ class Participation(models.Model):
 class Activity(models.Model):
     title = models.CharField(max_length=225)
     description = models.TextField()
-    image = models.ImageField(upload_to='activities', blank=True)
+    image = models.ImageField(upload_to='activities', null=True, blank=True)
     site = models.CharField(max_length=225)
     hour = models.IntegerField()
     start_date = models.DateField()
