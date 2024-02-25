@@ -77,7 +77,7 @@ class User(AbstractUser):
             self.is_superuser = True
         self.is_active = True
         self.username = self.generate_unique_username(self.email)
-        self.password = make_password(self.password)
+        #self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
 
