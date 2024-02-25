@@ -1,6 +1,12 @@
 from rest_framework import serializers
 from activities.models import *
 
+
+class ParticipantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Participation
+        fields = '__all__'
+
 class ActivityScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ActivitySchedule

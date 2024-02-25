@@ -8,6 +8,7 @@ from datetime import datetime
 from django.utils import timezone
 from datetime import timedelta
 from users import utils
+from activities import utils as u
 
 
 

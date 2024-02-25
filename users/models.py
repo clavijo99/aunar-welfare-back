@@ -4,6 +4,8 @@ from django.core import validators
 from django.utils.translation import gettext_lazy as _
 import re
 from users import utils
+from django.contrib.auth.hashers import make_password
+
 
 
 class User(AbstractUser):
@@ -71,6 +73,11 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         if self.is_superuser:
             self.type = 'ADMINISTRATOR'
+        if self.type == 'ADMINISTRATOR':
+            self.is_superuser = True
+        self.is_active = True
+        self.username = self.generate_unique_username(self.email)
+        self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
 

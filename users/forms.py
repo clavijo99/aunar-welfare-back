@@ -29,3 +29,5 @@ class UserPasswordResetForm(SetPasswordForm):
                 'class': 'form-control mb-4',
                 'placeholder': _("New password confirmation"),
             }))
+
+
