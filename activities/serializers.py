@@ -14,6 +14,7 @@ class ActivityScheduleSerializer(serializers.ModelSerializer):
 
 class ActivitySerializer(serializers.ModelSerializer):
     activities_schedule = ActivityScheduleSerializer(many=True)
+
     class Meta:
         model = Activity
         fields = '__all__'
