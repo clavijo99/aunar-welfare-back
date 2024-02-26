@@ -136,11 +136,14 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             current_date = timezone.now().date()
             activities_student = Activity.objects.filter(students=user)
 
-            # Excluye las actividades en las que el usuario ha participado con fecha de finalización y validez
-            activities_not_participated = activities_student.exclude(
-                participants__user=user,
-                participants__validate=True
-            )
+            # Obtén las actividades que el usuario ha participado y validado
+            activities_p = Participation.objects.filter(user=user, validate=True)
+
+            # Obtén los IDs de las actividades en activities_p
+            activities_p_ids = activities_p.values_list('activity', flat=True)
+
+            # Excluye las actividades que están referenciadas en activities_p de activities_student
+            activities_not_participated = activities_student.exclude(id__in=activities_p_ids)
 
             serializer = ActivitySerializer(activities_not_participated, many=True)
             return Response(serializer.data)
