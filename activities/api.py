@@ -116,8 +116,9 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
                 participation.save()
 
                 # Actualiza los puntos usando F() para evitar problemas de concurrencia
-                PointsUser.objects.filter(user=user).update(points=F('points') + activity.points)
-
+                p = PointsUser.objects.get(user=user)
+                p.points = p.points + activity.points
+                p.save()
                 serializer = ParticipantSerializer(participation)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Participation.DoesNotExist:
