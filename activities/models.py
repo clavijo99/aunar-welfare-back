@@ -8,6 +8,20 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from io import BytesIO
 
 
+
+
+class PointsUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='point')
+    points = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.user.first_name
+
+    class Meta:
+        verbose_name_plural = 'Puntos'
+        verbose_name = 'Punto'
+
+
 class Participation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='participations')
     activity = models.ForeignKey('activities.Activity', on_delete=models.CASCADE)
@@ -25,8 +39,6 @@ class Activity(models.Model):
     image = models.ImageField(upload_to='activities/', null=True, blank=True)
     site = models.CharField(max_length=225)
     start_date = models.DateField()
-    end_date = models.DateField()
-    day = models.CharField(max_length=10, choices=utils.DIAS_SEMANA_CHOICES)
     hour = models.CharField(max_length=10, choices=utils.CHOICES)
     points = models.IntegerField()
     students = models.ManyToManyField(User, related_name='activities')
@@ -69,33 +81,3 @@ def generate_qr_code(sender, instance, **kwargs):
 
         # Reconectar el manejador de señales después de guardar
         post_save.connect(generate_qr_code, sender=Activity)
-
-
-class ActivitySchedule(models.Model):
-    DAY_CHOICES = [
-        ('monday', 'Lunes'),
-        ('tuesday', 'Martes'),
-        ('wednesday', 'Miércoles'),
-        ('thursday', 'Jueves'),
-        ('friday', 'Viernes'),
-        ('saturday', 'Sábado'),
-        ('sunday', 'Domingo'),
-    ]
-
-    CHOICES = [(f"{h:02d}:{m:02d}", f"{h:02d}:{m:02d}") for h in range(6, 18) for m in [0, 30]]
-
-
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE ,related_name='activities_schedule', null=True)
-    day = models.CharField( verbose_name='Dia', max_length=10, choices=utils.DIAS_SEMANA_CHOICES)
-    hour_start = models.CharField( verbose_name='Hora de inicio', max_length=10, choices=utils.CHOICES)
-    hour_end = models.CharField( verbose_name='Hora final', max_length=10, choices=utils.CHOICES)
-    active = models.BooleanField( verbose_name='Activa', default=True)
-
-
-    def __str__(self):
-        return f"{self.activity.title} - {self.get_day_display()} {self.hour_start}"
-
-    class Meta:
-        unique_together = ['activity', 'day', 'hour_start', 'hour_end']
-        verbose_name = 'Agendar por semana'
-        verbose_name_plural = "Agendar por semana"

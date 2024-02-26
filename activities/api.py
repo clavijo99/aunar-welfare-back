@@ -92,11 +92,6 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             activity = Activity.objects.get(pk=pk)
             user = User.objects.get(pk=request.data['user_id'])
             now = timezone.now()
-            current_day = now.strftime('%A').lower()
-            activity_schedule = activity.activities_schedule.filter(
-                day=current_day,
-            ).first()
-
             if user not in activity.participants.all():
                 participation = Participation(user=user, activity=activity)
                 participation.save()
@@ -108,6 +103,9 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
                     participation.date_end = now
                     participation.validate = True
                     participation.save()
+                    points, created = PointsUser.objects.get_or_create(user=user)
+                    points.points = points.points + activity.points
+                    points.save()
                     return Response(status=status.HTTP_201_CREATED)
                 else :
                     return Response(status=status.HTTP_404_NOT_FOUND)

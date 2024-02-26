@@ -7,14 +7,8 @@ class ParticipantSerializer(serializers.ModelSerializer):
         model = Participation
         fields = '__all__'
 
-class ActivityScheduleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ActivitySchedule
-        fields = '__all__'
 
 class ActivitySerializer(serializers.ModelSerializer):
-    activities_schedule = ActivityScheduleSerializer(many=True)
-
     class Meta:
         model = Activity
         fields = '__all__'
