@@ -95,27 +95,32 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             activity = Activity.objects.get(pk=pk)
             user = User.objects.get(pk=request.data['user_id'])
             now = timezone.now()
-            if activity not in activity.participants.all():
+
+            # Comprueba si ya existe una participación activa para el usuario y la actividad
+            existing_participation = Participation.objects.filter(user=user, activity=activity,
+                                                                  date_end__isnull=True).exists()
+
+            if not existing_participation:
+                # Crea una nueva participación
                 participation = Participation(user=user, activity=activity)
                 participation.save()
-                serializer = ParticipantSerializer(participation)
 
+                serializer = ParticipantSerializer(participation)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
+                # Actualiza la participación existente
                 participation = Participation.objects.get(user=user, activity=activity, date_end__isnull=True)
-                if participation:
-                    participation.date_end = now
-                    participation.validate = True
-                    participation.save()
-                    points, created = PointsUser.objects.get_or_create(user=user)
-                    points.points = points.points + activity.points
-                    points.save()
-                    serializer = ParticipantSerializer(participation)
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                else :
-                    return Response(status=status.HTTP_404_NOT_FOUND)
-        except IntegrityError:
-            return Response(status=status.HTTP_406_NOT_ACCEPTABLE).s
+                participation.date_end = now
+                participation.validate = True
+                participation.save()
+
+                # Actualiza los puntos usando F() para evitar problemas de concurrencia
+                PointsUser.objects.filter(user=user).update(points=F('points') + activity.points)
+
+                serializer = ParticipantSerializer(participation)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Participation.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         except Activity.DoesNotExist:
             return Response({'message': 'Activity not found'}, status=status.HTTP_404_NOT_FOUND)
 
