@@ -139,7 +139,7 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             # Excluye las actividades en las que el usuario ha participado con fecha de finalización y validez
             activities_not_participated = activities_student.exclude(
                 participants__user=user,
-                participants__date_end__isnull=False,
+                participants__end__date__isnull=False,
                 participants__validate=True
             )
 
