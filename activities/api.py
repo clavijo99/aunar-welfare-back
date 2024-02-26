@@ -124,8 +124,7 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             # Filtra las actividades directamente por el usuario y la fecha actual
             user_activities_today = Activity.objects.filter(
                 participants=user,
-                start_date=current_date
-            ).order_by('hour')
+            ).order_by('start_date', 'hour')
 
             serializer = ActivitySerializer(user_activities_today, many=True)
             return Response(serializer.data)
