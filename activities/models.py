@@ -11,7 +11,7 @@ from io import BytesIO
 
 
 class PointsUser(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='point')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='point', unique=True)
     points = models.IntegerField(default=0)
 
     def __str__(self):
