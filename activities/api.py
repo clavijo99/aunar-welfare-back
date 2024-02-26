@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from rest_framework import permissions, status, mixins, viewsets, parsers
@@ -124,24 +125,29 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
     @action(detail=False, methods=['post'])
     def get_my_activities(self, request, pk=None):
         try:
-            user = User.objects.get(pk=request.data['user_id'])
-            current_date = datetime.now().date()
+            user_id = request.data.get('user_id')
+            user = User.objects.get(pk=user_id)
+            current_date = timezone.now().date()
 
             # Filtra las actividades directamente por el usuario y la fecha actual
             user_activities_today = Activity.objects.filter(
                 students=user,
+                start_date=current_date,
             ).order_by('start_date', 'hour')
+
+            # Filtra las actividades exitosas directamente
             activities_successful = Activity.objects.filter(
-                participants=user
+                participants__user=user,
+                participants__successful=True,
             )
 
-            serializer = ActivitySerializer(user_activities_today.exclude(activities_successful), many=True)
+            # Excluye las actividades exitosas
+            user_activities_today = user_activities_today.exclude(pk__in=activities_successful)
+
+            serializer = ActivitySerializer(user_activities_today, many=True)
             return Response(serializer.data)
-        except User.DoesNotExist:
-            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        except Activity.DoesNotExist:
-            return Response({'message': 'No activities found for the user on the given date'},
-                            status=status.HTTP_404_NOT_FOUND)
+        except ObjectDoesNotExist as e:
+            return Response({'message': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
         request=ActivityRegisterUserSerializer,
