@@ -146,8 +146,7 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             if user.type == utils.TEACHER:
                 teacher_activities = Activity.objects.filter(
                     teacher=user,
-                    start_date=current_date
-                )
+                ).order_by('start_date', 'hour')
                 serializer = ActivitySerializer(teacher_activities, many=True)
                 return Response( serializer.data)
             else :
