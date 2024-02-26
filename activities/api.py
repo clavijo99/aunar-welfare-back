@@ -131,14 +131,12 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
 
             # Filtra las actividades directamente por el usuario y la fecha actual
             user_activities_today = Activity.objects.filter(
-                students=user,
-                start_date=current_date,
+                students__user=user,
             ).order_by('start_date', 'hour')
 
             # Filtra las actividades exitosas directamente
             activities_successful = Activity.objects.filter(
                 participants__user=user,
-                participants__successful=True,
             )
 
             # Excluye las actividades exitosas
