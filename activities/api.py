@@ -85,7 +85,8 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             return Response({'message': 'Activity not found'}, status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
-        request=ActivityRegisterUserSerializer
+        request=ActivityRegisterUserSerializer,
+        responses=ParticipantSerializer
     )
     @action(detail=True, methods=['post'])
     def add_student_participate(self, request, pk=None):
@@ -96,8 +97,9 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             if user not in activity.participants.all():
                 participation = Participation(user=user, activity=activity)
                 participation.save()
+                serializer = ParticipantSerializer(participation)
 
-                return Response(status=status.HTTP_201_CREATED)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
                 participation = Participation.objects.get(user=user, activity=activity, date_end__isnull=True)
                 if participation:
@@ -107,7 +109,8 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
                     points, created = PointsUser.objects.get_or_create(user=user)
                     points.points = points.points + activity.points
                     points.save()
-                    return Response(status=status.HTTP_201_CREATED)
+                    serializer = ParticipantSerializer(participation)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
                 else :
                     return Response(status=status.HTTP_404_NOT_FOUND)
         except Activity.DoesNotExist:
