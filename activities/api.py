@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from rest_framework import permissions, status, mixins, viewsets, parsers
 from rest_framework.decorators import action
@@ -93,7 +94,7 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             activity = Activity.objects.get(pk=pk)
             user = User.objects.get(pk=request.data['user_id'])
             now = timezone.now()
-            if user not in activity.participants.all():
+            if activity not in activity.participants.all():
                 participation = Participation(user=user, activity=activity)
                 participation.save()
                 serializer = ParticipantSerializer(participation)
@@ -112,6 +113,8 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
                 else :
                     return Response(status=status.HTTP_404_NOT_FOUND)
+        except IntegrityError:
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE).s
         except Activity.DoesNotExist:
             return Response({'message': 'Activity not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -128,8 +131,11 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             user_activities_today = Activity.objects.filter(
                 students=user,
             ).order_by('start_date', 'hour')
+            activities_successful = Activity.objects.filter(
+                participants=user
+            )
 
-            serializer = ActivitySerializer(user_activities_today, many=True)
+            serializer = ActivitySerializer(user_activities_today.exclude(activities_successful), many=True)
             return Response(serializer.data)
         except User.DoesNotExist:
             return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
