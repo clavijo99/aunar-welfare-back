@@ -64,7 +64,8 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             return Response({'message': 'Activity not found'}, status=status.HTTP_404_NOT_FOUND)
 
     @extend_schema(
-        request=ActivityRegisterUserSerializer
+        request=ActivityRegisterUserSerializer,
+        responses=PointSerializer
     )
     @action(detail=False, methods=['post'])
     def get_points(self, request, pk=None):

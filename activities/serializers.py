@@ -15,3 +15,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 class ActivityRegisterUserSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
+
+
+class PointSerializer(serializers.Serializer):
+    points = serializers.IntegerField()
