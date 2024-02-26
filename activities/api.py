@@ -74,7 +74,6 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             if len(user.participations.all()) > 0:
                 points = 0
                 for activity in user.participations.all():
-                    print(activity.activity.activities_schedule.all())
                     points = points + activity.activity.points
                 return Response({'points': points})
             else:
