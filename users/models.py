@@ -80,7 +80,7 @@ class User(AbstractUser):
         if self.type == 'ADMINISTRATOR':
             self.is_superuser = True
         if  is_password_usable(self.password):
-            self.password = make_password(self.password)
+            self.set_password(self.password)
         print(is_password_usable(self.password))
         print(self.password)
         self.is_active = True
