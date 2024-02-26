@@ -1,4 +1,6 @@
 from django.contrib import admin
+
+from .forms import ActivityAdminForm
 from .models import *
 
 
@@ -9,6 +11,7 @@ class ActivityScheduleInline(admin.TabularInline):
 
 @admin.register(Activity)
 class ActivitiesAdmin(admin.ModelAdmin):
+    form = ActivityAdminForm
     list_display = ('title', 'description')
     readonly_fields = ('qr_code', )
     exclude = ('students',)

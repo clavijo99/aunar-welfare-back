@@ -91,51 +91,26 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
         try:
             activity = Activity.objects.get(pk=pk)
             user = User.objects.get(pk=request.data['user_id'])
-
-            # Obtener el día y la hora actual
             now = timezone.now()
             current_day = now.strftime('%A').lower()
-            current_time = now.time()
-
-            # Convertir current_time a datetime combinando con la fecha actual
-            current_datetime = datetime.combine(now.date(), current_time)
-
-            # Verificar si hay un ActivitySchedule para la actividad y la hora actual
             activity_schedule = activity.activities_schedule.filter(
                 day=current_day,
-                hour_start__lte=current_datetime,
-                hour_end__gte=current_datetime - timedelta(minutes=5)
             ).first()
 
-            if not activity_schedule:
-                # No hay un ActivitySchedule, crear uno nuevo
-                start_time_limit = current_time - timedelta(minutes=5)
-                end_time_limit = current_time + timedelta(minutes=5)
-
-                # Validar que la hora actual no sea menor de 5 minutos o mayor de 5 minutos a la hora de inicio
-                if activity_schedule.hour_start  <= current_time <= activity_schedule.hour_start + timedelta(minutes=5):
-                    activity_schedule = ActivitySchedule(
-                        activity=activity,
-                        day=current_day,
-                        hour_start=current_time,
-                        hour_end=current_time + timedelta(minutes=5),
-                    )
-                    activity_schedule.save()
-            else:
-                return Response({'message': 'Error: Fuera del rango de tiempo permitido'},
-                                    status=status.HTTP_400_BAD_REQUEST)
-
-            # Verificar si el usuario ya está registrado como participante
             if user not in activity.participants.all():
-                # Crear una participación para el usuario y la actividad
-                participation = Participation(user=user, activity=activity, validate=True)
+                participation = Participation(user=user, activity=activity)
                 participation.save()
 
                 return Response(status=status.HTTP_201_CREATED)
             else:
-                return Response({'message': 'El usuario ya se encuentra registrado'},
-                                status=status.HTTP_400_BAD_REQUEST)
-
+                participation = Participation.objects.get(user=user, activity=activity, date_end__isnull=True)
+                if participation:
+                    participation.date_end = now
+                    participation.validate = True
+                    participation.save()
+                    return Response(status=status.HTTP_201_CREATED)
+                else :
+                    return Response(status=status.HTTP_404_NOT_FOUND)
         except Activity.DoesNotExist:
             return Response({'message': 'Activity not found'}, status=status.HTTP_404_NOT_FOUND)
 
