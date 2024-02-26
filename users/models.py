@@ -32,7 +32,7 @@ class User(AbstractUser):
         auto_now=True,
         help_text=_('Date time on which the object was last modified')
     )
-    nit = models.CharField( verbose_name='Identificacion', max_length=20, unique=True, null=True, blank=True)
+    nit = models.CharField( verbose_name='Identificacion', max_length=20, unique=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name']
 
