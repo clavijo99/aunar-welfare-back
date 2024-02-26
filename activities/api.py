@@ -133,17 +133,14 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             activities_student = Activity.objects.filter(students=user)
 
             # Excluye las actividades en las que el usuario ha participado
-            activities_not_participated = activities_student.exclude(participants=user).order_by('start_date')
+            activities_not_participated = activities_student.exclude(participants=user,
+                                                                     end_date__isnull=False).order_by('start_date')
 
             serializer = ActivitySerializer(activities_not_participated, many=True)
             return Response(serializer.data)
         except ObjectDoesNotExist as e:
             return Response({'message': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-    @extend_schema(
-        request=ActivityRegisterUserSerializer,
-        responses=ActivitySerializer(many=True)
-    )
     @action(detail=False, methods=['post'])
     def get_my_activities_teacher(self, request, pk=None):
         try:
