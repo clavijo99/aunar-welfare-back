@@ -76,7 +76,8 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             if len(user.participations.all()) > 0:
                 points = 0
                 for activity in user.participations.all():
-                    points = points + activity.activity.points
+                    if activity.date_end is not None and activity.validate :
+                        points = points + activity.activity.points
                 return Response({'points': points})
             else:
                 return Response({'points': 0})
