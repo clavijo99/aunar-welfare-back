@@ -7,6 +7,7 @@ SECRET_KEY = 'p3gm=o9o+_r(5*o$$kn#h*8#n1r)aquf^^nm_v5u0pn^qa$=4*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 CORS_ALLOWED_ORIGINS = ['https://aunar-welfare.mi-server.cloud']
+ALLOWED_HOSTS = ['https://aunar-welfare.mi-server.cloud', '*']
 CSRF_TRUSTED_ORIGINS = ['https://aunar-welfare.mi-server.cloud']
 
 # CORS Config: install django-cors-headers and uncomment the following to allow CORS from any origin
