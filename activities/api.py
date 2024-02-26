@@ -130,19 +130,12 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             current_date = timezone.now().date()
 
             # Filtra las actividades directamente por el usuario y la fecha actual
-            user_activities_today = Activity.objects.filter(
-                students__user=user,
-            ).order_by('start_date', 'hour')
+            activities_student = Activity.objects.filter(students=user)
 
-            # Filtra las actividades exitosas directamente
-            activities_successful = Activity.objects.filter(
-                participants__user=user,
-            )
+            # Excluye las actividades en las que el usuario ha participado
+            activities_not_participated = activities_student.exclude(participants=user).order_by('start_date')
 
-            # Excluye las actividades exitosas
-            user_activities_today = user_activities_today.exclude(pk__in=activities_successful)
-
-            serializer = ActivitySerializer(user_activities_today, many=True)
+            serializer = ActivitySerializer(activities_not_participated, many=True)
             return Response(serializer.data)
         except ObjectDoesNotExist as e:
             return Response({'message': str(e)}, status=status.HTTP_404_NOT_FOUND)
