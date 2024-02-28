@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
+from django.db.models import F
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiParameter
 from rest_framework import permissions, status, mixins, viewsets, parsers
 from rest_framework.decorators import action
@@ -97,7 +98,6 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
             user = User.objects.get(pk=request.data['user_id'])
             now = timezone.now()
 
-            # Comprueba si ya existe una participación activa para el usuario y la actividad
             existing_participation = Participation.objects.filter(user=user, activity=activity,
                                                                   date_end__isnull=True).exists()
 
@@ -114,11 +114,8 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
                 participation.date_end = now
                 participation.validate = True
                 participation.save()
-
-                # Actualiza los puntos usando F() para evitar problemas de concurrencia
-                p = PointsUser.objects.get(user=user)
-                p.points = p.points + activity.points
-                p.save()
+                PointsUser.objects.get_or_create(user=user)
+                PointsUser.objects.filter(user=user).update(points=F('points') + activity.points)
                 serializer = ParticipantSerializer(participation)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Participation.DoesNotExist:
@@ -163,6 +160,6 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
                 serializer = ActivitySerializer(teacher_activities, many=True)
                 return Response( serializer.data)
             else :
-                return Response({'message': 'No es un profesor'})
+                return Response({'message': 'No es un profesor'}, status=status.HTTP_400_BAD_REQUEST)
         except Activity.DoesNotExist:
             return Response({'message': 'Activity not found'}, status=status.HTTP_404_NOT_FOUND)

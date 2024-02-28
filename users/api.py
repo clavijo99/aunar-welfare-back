@@ -258,6 +258,11 @@ class CustomObtainTokenPairWithView(TokenObtainPairView):
         methods=["post"]
     )
     def post(self, request, *args, **kwargs):
+        email = request.data.get('email', None)
+        user_exists = User.objects.filter(email=email).exists()
+        if not user_exists:
+            return Response({"error": "El correo electrónico no existe en la base de datos."},
+                            status=status.HTTP_400_BAD_REQUEST)
         return super().post(request, *args, **kwargs)
 
 
