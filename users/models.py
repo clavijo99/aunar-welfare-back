@@ -1,5 +1,5 @@
 import random
-
+import datetime
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core import validators
@@ -7,6 +7,8 @@ from django.utils.translation import gettext_lazy as _
 import re
 from users import utils
 from django.contrib.auth.hashers import is_password_usable, make_password
+from django.contrib.sites.models import Site
+from django.conf import settings
 
 
 
@@ -46,6 +48,7 @@ class User(AbstractUser):
         while User.objects.filter(username=username).exists():
             username = f"{username_base}_{count}"
             count += 1
+        print(username)
         return username
 
     def create_reset_token(self):  # noqa
@@ -75,17 +78,14 @@ class User(AbstractUser):
                 fail_silently=False,
                 html_message=html_message)
     def save(self, *args, **kwargs):
-        if self.is_superuser:
-            self.type = 'ADMINISTRATOR'
-        if self.type == 'ADMINISTRATOR':
-            self.is_superuser = True
-        if  is_password_usable(self.password):
-            self.set_password(self.password)
-        print(is_password_usable(self.password))
-        print(self.password)
-        self.is_active = True
-        self.username = self.generate_unique_username(self.email)
-        #self.password = make_password(self.password)
+        if self.pk is None:
+            if self.is_superuser:
+                self.type = 'ADMINISTRATOR'
+            if self.type == 'ADMINISTRATOR':
+                self.is_superuser = True
+            if is_password_usable(self.password):
+                self.set_password(self.password)
+            self.username = self.generate_unique_username(self.email)
         super().save(*args, **kwargs)
 
 

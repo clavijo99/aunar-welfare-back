@@ -6,6 +6,6 @@ from django.contrib import admin
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ('nit', 'first_name', 'username', 'email')
     search_fields = ('username', 'email', 'nit')
-    fields = ('first_name', 'last_name', 'nit', 'email', 'type', 'avatar', 'password')
-    exclude = ('is_staff', 'is_superuser', 'groups', 'user_permissions', 'last_login', 'date_joined', 'is_active')
+    fields = ('first_name', 'last_name', 'nit', 'email', 'type', 'avatar', 'password', 'is_active')
+    exclude = ('is_staff', 'is_superuser', 'groups', 'user_permissions', 'last_login', 'date_joined',)
 

@@ -24,9 +24,17 @@ from django.utils.translation import gettext_lazy as _
 from .models import User, CodeRecoverPassword
 from .serializers import CustomTokenObtainPairSerializer, UserModelSerializer, RegisterSerializer, TokenOutput, \
     LogoutSerializer, ResetPasswordRequestSerializer, ResetPasswordCodeValidateResponse, \
-    ResetPasswordCodeValidateRequestSerializer, ResetPasswordSerializer, UserAvatarSerializer
+    ResetPasswordCodeValidateRequestSerializer, ResetPasswordSerializer, UserAvatarSerializer, FileUploadSerializer
 from .views import generate_code
 from main.serializers import DefaultResponseSerializer
+import pandas as pd
+from users.models import User
+from django.contrib.auth.hashers import make_password
+from django.db import transaction
+import re
+
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -266,6 +274,7 @@ class CustomObtainTokenPairWithView(TokenObtainPairView):
         return super().post(request, *args, **kwargs)
 
 
+
 @extend_schema(tags=['authentication'], summary=_("Generar un nuevas credenciales de sesion"),
                description=_("Se generan nuevas credenciales de sesion con las credenciales anteriores"))
 class CustomTokenRefreshView(TokenRefreshView):
@@ -423,3 +432,77 @@ class ResetPasswordApiView(APIView):
             return Response({'detail': 'El usuario no se encontro'})
         except ValidationError as e:
             return Response({'detal': 'La contraseña debe ser mayor a 8 caracteres y contener como minimo una letra'})
+
+
+@extend_schema(
+    tags=['Cargar estudiantes'],
+    summary=_("Anexar un archivo con excel con los usuarios de la base de datos"),
+    description=_("Anexar un archivo con excel con los usuarios de la base de datos"),
+    request={
+        'multipart/form-data': {
+            'type': 'object',
+            'properties': {
+                'Excel': {
+                    'type': 'string',
+                    'format': 'binary'
+                },
+            }
+        }
+    },
+    methods=["post"]
+)
+class UploadUser(APIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = FileUploadSerializer
+
+    def generate_unique_username(self, email: str) -> str:
+        # Implementa tu lógica para generar un username único
+        # Aquí, se utiliza el mismo enfoque que en tu método original
+        local_part = email.split('@')[0]
+        username_base = re.sub(r'\W+', '', local_part).lower()
+        username = username_base
+        count = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{username_base}_{count}"
+            count += 1
+        return username
+
+    def post(self, request):
+        serializer = FileUploadSerializer(data=request.data)
+
+        if serializer.is_valid():
+            excel_file = serializer.validated_data['Excel']
+            df = pd.read_excel(excel_file)
+
+            # Lista para almacenar usuarios a insertar
+            users_to_insert = []
+
+            # Realiza acciones con los datos del DataFrame
+            for index, row in df.iterrows():
+                username = self.generate_unique_username(row['Email'])
+                nit = row['Identificacion']
+
+                # Verificar si el usuario ya existe antes de agregarlo a la lista
+                if not User.objects.filter(nit=nit).exists():
+                    user = User(
+                        username=username,
+                        email=row['Email'],
+                        first_name=row['Nombre'],
+                        last_name=row['Apellido'],
+                        nit=row['Identificacion'],
+                        password=make_password('Aunar.2024'),  # Almacena la contraseña de forma segura
+                    )
+                    users_to_insert.append(user)
+
+            # Asegúrate de cerrar el archivo después de leerlo
+            excel_file.close()
+
+            # Usar bulk_create para insertar usuarios
+            with transaction.atomic():
+                User.objects.bulk_create(users_to_insert)
+
+            return Response({"success": True})
+        else:
+            return Response({"success": False, "errors": serializer.errors})
+
+

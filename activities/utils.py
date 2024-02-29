@@ -1,6 +1,6 @@
 from datetime import datetime
 
-CHOICES = [(f"{h:02d}:{m:02d}", f"{h:02d}:{m:02d}") for h in range(6, 19) for m in [0, 30]]
+CHOICES = [(f"{h:02d}:{m:02d}", f"{h:02d}:{m:02d}") for h in range(7, 22) for m in range(0, 60, 5)]
 
 DIAS_SEMANA_CHOICES = [
     ('lunes', 'Lunes'),

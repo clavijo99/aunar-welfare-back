@@ -128,3 +128,7 @@ class TokenOutput(serializers.Serializer):  # noqa
 
 class LogoutSerializer(serializers.Serializer):  # noqa
     refresh_token = serializers.CharField()
+
+
+class FileUploadSerializer(serializers.Serializer):
+    Excel = serializers.FileField()

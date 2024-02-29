@@ -21,3 +21,8 @@ class PointsUserAdmin(admin.ModelAdmin):
         return obj.user.first_name
     def nit(self, obj):
         return obj.user.nit
+
+
+@admin.register(Participation)
+class ParticipationsAdmin(admin.ModelAdmin):
+    list_display = ('date_start', )
