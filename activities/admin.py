@@ -22,7 +22,3 @@ class PointsUserAdmin(admin.ModelAdmin):
     def nit(self, obj):
         return obj.user.nit
 
-
-@admin.register(Participation)
-class ParticipationsAdmin(admin.ModelAdmin):
-    list_display = ('date_start', )
