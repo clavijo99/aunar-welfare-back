@@ -148,6 +148,11 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet , viewsets.GenericViewSet):
         except ObjectDoesNotExist as e:
             return Response({'message': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
+
+
+    @extend_schema(
+        request=ActivityRegisterUserSerializer,
+        responses=ActivitySerializer(many=True))
     @action(detail=False, methods=['post'])
     def get_my_activities_teacher(self, request, pk=None):
         try:
