@@ -49,3 +49,12 @@ else:
             'PORT': 5432,
         }
     }
+
+
+EMAIL_PASSWORD = ''
+DEFAULT_FROM_EMAIL = 'No Reply <no-reply@aunar-welfare.mi-server.cloud>'
+EMAIL_HOST = os.environ.setdefault('EMAIL_HOST', 'mail.afiasesoria.com')
+EMAIL_PORT = os.environ.setdefault('EMAIL_PORT', '')
+EMAIL_HOST_USER = os.environ.setdefault('EMAIL_HOST_USER', 'servicioalcliente@afiasesoria.com')
+EMAIL_HOST_PASSWORD = os.environ.setdefault('EMAIL_HOST_PASSWORD', EMAIL_PASSWORD)
+EMAIL_USE_TLS = True

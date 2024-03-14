@@ -11,6 +11,16 @@ from django.contrib.sites.models import Site
 from django.conf import settings
 
 
+class CarreraUser(models.Model):
+    name = models.CharField(_('Nombre'), max_length=255)
+
+    class Meta:
+        verbose_name = _('Carrera')
+        verbose_name_plural = _('Carreras')
+
+    def __str__(self):
+        return self.name
+
 
 
 class User(AbstractUser):
@@ -23,6 +33,7 @@ class User(AbstractUser):
         }
     )
     avatar = models.ImageField(upload_to='avatar/', null=True, blank=True)
+    carrera = models.OneToOneField(CarreraUser, on_delete=models.CASCADE, related_name='carrera', null=True)
     created = models.DateTimeField(
         'created at',
         auto_now_add=True,

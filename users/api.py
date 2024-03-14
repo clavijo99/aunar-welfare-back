@@ -343,7 +343,7 @@ class ResetPasswordCodeApiView(APIView):
                 )
                 if code_recovery.pk:
                     subject = _("Restablecer Contraseña")
-                    html_message = render_to_string('emails/reset_password_code.html', {
+                    html_message = render_to_string('recover password/reset_password_code.html', {
                         'code': code,
                         'first_name': user.first_name,
                     })
